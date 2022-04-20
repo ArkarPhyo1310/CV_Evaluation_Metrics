@@ -1,10 +1,10 @@
-<h1><center> CV_Evaluation_Metrics </center></h1>
+# <div align="center">CV_Evaluation_Metrics </div>
 
 **This project is still in WIP.**
 
 This project is inspired due to the lack of various evaluation metrics of computer vision in one place.
 
-<h2><center>  Features </center></h2>
+## <div align="center"> Features </div>
 
 <details>
 <summary> Classification  </summary>
@@ -69,7 +69,7 @@ cd CV_Evaluation_Metrics
 python setup.py develop
 ```
 
-<h2><center>  Usage/Examples </center></h2>
+## <div align="center"> Usage/Examples </div>
 
 - Classification
 
@@ -129,7 +129,7 @@ python tools/run_tracking.py
 
 >NOTE: More evaluation metrics for different task such as detection, segmentation, etc. will be updated soon. I have also provided data required to test for tracking in the ***data*** folder. Original data can be found [here](https://github.com/JonathonLuiten/TrackEval#quickly-evaluate-on-supported-benchmarks).
 
-## Credits
+## <div align="center">Credits </div>
 
 - [TrackEval](https://github.com/JonathonLuiten/TrackEval)
 - [TorchMetrics](https://torchmetrics.rtfd.io/en/latest)
