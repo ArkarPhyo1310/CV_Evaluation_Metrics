@@ -1,4 +1,4 @@
-# <div align="center">CV_Evaluation_Metrics </div>
+# <div align="center">CV Evaluation Metrics [All in One] </div>
 
 **This project is still in WIP.**
 
