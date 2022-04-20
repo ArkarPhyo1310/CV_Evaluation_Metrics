@@ -53,7 +53,7 @@ This project is inspired due to the lack of various evaluation metrics of comput
 
 >Incompleted features will be implemented in near future.
 
-<h2><center>  Installation </center></h2>
+## <div align="center"> Installation </div>
 
 ### Requirements
 
@@ -96,8 +96,7 @@ cls_cfg = CMetricConfig(
 cls_cfg.update(gt, pred)
 
 metric_list = ["Accuracy", "Precision", "Recall", "F1-score", "Confusion Matrix"]
-eval_cfg = MetricEvalConfig(specific_metric_fields=metric_list, evaluation_task="classification")
-evaluator = MetricEvaluator(eval_cfg=eval_cfg)
+evaluator = MetricEvaluator(specific_metric_fields=metric_list, evaluation_task="classification")
 evaluator.evaluate(cls_cfg)
 evaluator.render_result(model_name="Custom", show_overall=False)
 ```

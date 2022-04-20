@@ -5,7 +5,7 @@ import numpy as np
 
 def box_iou(bboxes1: np.ndarray, bboxes2: np.ndarray, box_format: str = 'xywh', do_ioa: bool = False):
     """ Calculates the IOU (intersection over union) between two arrays of boxes.
-        Allows variable box formats ('xywh' and 'x0y0x1y1').
+        Allows variable box formats ('xywh' and 'xyxy').
         If do_ioa (intersection over area) , then calculates the intersection over the area of boxes1 - this is commonly
         used to determine if detections are within crowd ignore region.
     """
@@ -21,7 +21,7 @@ def box_iou(bboxes1: np.ndarray, bboxes2: np.ndarray, box_format: str = 'xywh', 
         bboxes1 = bboxes1
         bboxes2 = bboxes2
     else:
-        raise Exception('box_format %s is not implemented' % box_format)
+        raise Exception(f'box_format {box_format} is not implemented')
 
     # layout: (x0, y0, x1, y1)
     min_ = np.minimum(bboxes1[:, np.newaxis, :], bboxes2[np.newaxis, :, :])
