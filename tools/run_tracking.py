@@ -5,7 +5,7 @@ Run example:
 python run_tracking.py
 """
 from cv_eval_metrics.abstract import MetricEvaluator
-from cv_eval_metrics.config import MetricEvalConfig, TMetricConfig
+from cv_eval_metrics.config import TMetricConfig
 from cv_eval_metrics.dataset import MOT
 
 if __name__ == '__main__':
@@ -16,8 +16,7 @@ if __name__ == '__main__':
 
     mot_dataset = MOT(gt_path=gt_path, pred_path=pred_path, file_format="txt")
 
-    eval_cfg = MetricEvalConfig(benchmark="MOT", evaluation_task="tracking")
-    evaluator = MetricEvaluator(eval_cfg)
+    evaluator = MetricEvaluator(benchmark="MOT", evaluation_task="tracking")
 
     gt_files, pred_files, seq_names = mot_dataset.gt_files, mot_dataset.pred_files, mot_dataset.seq_list
 

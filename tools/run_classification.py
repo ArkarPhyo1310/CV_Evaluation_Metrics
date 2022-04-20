@@ -6,7 +6,7 @@ python run_classification.py
 """
 import numpy as np
 from cv_eval_metrics.abstract.evaluator import MetricEvaluator
-from cv_eval_metrics.config import CMetricConfig, MetricEvalConfig
+from cv_eval_metrics.config import CMetricConfig
 from cv_eval_metrics.objects import ClassificationObject
 
 if __name__ == "__main__":
@@ -32,7 +32,6 @@ if __name__ == "__main__":
     cls_cfg.update(gt, pred)
 
     metric_list = ["Accuracy", "Precision", "Recall", "F1-score", "Confusion Matrix"]
-    eval_cfg = MetricEvalConfig(specific_metric_fields=metric_list, evaluation_task="classification")
-    evaluator = MetricEvaluator(eval_cfg=eval_cfg)
+    evaluator = MetricEvaluator(specific_metric_fields=metric_list, evaluation_task="classification")
     evaluator.evaluate(cls_cfg)
     evaluator.render_result(model_name="Custom", show_overall=False)

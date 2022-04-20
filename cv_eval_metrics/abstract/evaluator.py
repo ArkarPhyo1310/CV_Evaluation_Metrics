@@ -1,13 +1,13 @@
-from typing import Union
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
-from cv_eval_metrics.config import MetricEvalConfig, TMetricConfig
+from cv_eval_metrics.config import TMetricConfig
 from cv_eval_metrics.config.c_metric_cfg import CMetricConfig
 from cv_eval_metrics.metrics.classification import (Accuracy,
-                                                          ConfusionMatrix,
-                                                          F1Score, Precision,
-                                                          Recall)
+                                                    ConfusionMatrix,
+                                                    F1Score, Precision,
+                                                    Recall)
 from cv_eval_metrics.metrics.common import COUNT
 from cv_eval_metrics.metrics.tracking import CLEAR, HOTA, IDENTITY
 from tabulate import tabulate
@@ -16,11 +16,29 @@ from tabulate import tabulate
 class MetricEvaluator:
     """Evaluator class for evaluating different metrics"""
 
-    def __init__(self, eval_cfg: MetricEvalConfig) -> None:
+    def __init__(
+        self,
+        evaluation_task: str,
+        benchmark: Optional[str] = None,
+        metric_classes: Optional[List] = None,
+        specific_metric_fields: Optional[List[str]] = None,
+    ) -> None:
         self.evaluation_result = {}
         self.table_result = {}
-        self.tracking_benchmark = eval_cfg.benchmark
-        self._check_config(eval_cfg)
+        self.benchmark = benchmark.lower() if benchmark is not None else benchmark
+        self.evaluation_task = evaluation_task
+        self.metrics_cls_to_eval = metric_classes
+        self.specific_metric_fields = specific_metric_fields
+
+        self.benchmark_dict = {
+            'mot': [
+                "MOTA", "IDF1", "HOTA", "MT", "ML", "FP", "FN", "Recall", "Precision",
+                "AssA", "DetA", "AssRe", "AssPr", "DetRe", "DetPr", "LocA", "IDSW", "FRAG"
+            ],
+            'kitti': ["HOTA", "DetA", "AssA", "DetRe", "DetPr", "AssRe", "AssPr", "LocA", "MOTA"]
+        }
+
+        self._check_config()
 
     def evaluate(self, metric_cfg: Union[TMetricConfig, CMetricConfig], curr_seq: str = None):
         self.classes = metric_cfg.classes
@@ -34,7 +52,7 @@ class MetricEvaluator:
 
     def render_result(self, model_name: str, show_overall: bool = True):
         self._summarize_result(model_name, show_overall)
-        if len(self.specific_metric_fields) != 0:
+        if self.specific_metric_fields:
             self.show_specific_fields(model_name)
         else:
             for metric_name in self.table_result.keys():
@@ -69,10 +87,10 @@ class MetricEvaluator:
         df = pd.DataFrame(data_array, index=index, columns=headers)
 
         df = df[self.specific_metric_fields]
-        if self.tracking_benchmark is None:
+        if self.benchmark is None:
             self.specific_metric_fields = ["MODEL NAME: " + model_name] + self.specific_metric_fields
         else:
-            self.specific_metric_fields = [self.tracking_benchmark + f": {model_name}"] + self.specific_metric_fields
+            self.specific_metric_fields = [self.benchmark + f": {model_name}"] + self.specific_metric_fields
         print(tabulate(df, headers=self.specific_metric_fields, tablefmt="pretty"))
 
     def _summarize_result(self, model_name: str, show_overall: bool = True):
@@ -97,27 +115,28 @@ class MetricEvaluator:
                     'header': np.array(header)
                 }
 
-    def _check_config(self, eval_cfg: MetricEvalConfig):
+    def _check_config(self):
         metric_cls_set: list = list()
         print("Checking Benchmark..Adding Metric Class if required...")
-        if self.tracking_benchmark == "MOT":
-            eval_cfg.specific_metric_fields = eval_cfg.mot_benchmark_fields
-        elif self.tracking_benchmark == "KITTI":
-            eval_cfg.specific_metric_fields = eval_cfg.kitti_benchmark_fields
+        if self.benchmark is not None:
+            try:
+                self.specific_metric_fields = self.benchmark_dict[self.benchmark]
+            except Exception:
+                raise ValueError(f"'{self.benchmark}' does not implemented yet!")
         else:
             print("No benchmark is provided!")
 
         print("Checking Metric Classes...")
-        if len(eval_cfg.metrics_cls_to_eval) != 0:
-            metric_cls_set = set(eval_cfg.metrics_cls_to_eval)
+        if self.metrics_cls_to_eval:
+            metric_cls_set = set(self.metrics_cls_to_eval)
         else:
-            if eval_cfg.evaluation_task == "tracking":
+            if self.evaluation_task == "tracking":
                 print("Checking Specific Metric Fields List...")
                 clear_metric = CLEAR()
                 hota_metric = HOTA()
                 id_metric = IDENTITY()
-                if len(eval_cfg.specific_metric_fields) != 0:
-                    for field in eval_cfg.specific_metric_fields:
+                if self.specific_metric_fields:
+                    for field in self.specific_metric_fields:
                         if field in clear_metric.metric_fields:
                             metric_cls_set.append(clear_metric)
                         elif field in hota_metric.metric_fields:
@@ -126,17 +145,17 @@ class MetricEvaluator:
                             metric_cls_set.append(id_metric)
                         else:
                             print(f"There is no '{field}' metric field in current Metric Classes. Skipping...")
-                            eval_cfg.specific_metric_fields.remove(field)
-            elif eval_cfg.evaluation_task == "classification":
+                            self.specific_metric_fields.remove(field)
+            elif self.evaluation_task == "classification":
                 print("Checking Specific Metric Fields List...")
                 acc = Accuracy()
                 pre = Precision()
                 rcl = Recall()
                 f1 = F1Score()
                 cm = ConfusionMatrix()
-                if len(eval_cfg.specific_metric_fields) != 0:
-                    eval_cfg.specific_metric_fields = [field.title() for field in eval_cfg.specific_metric_fields]
-                    for field in eval_cfg.specific_metric_fields:
+                if self.specific_metric_fields:
+                    self.specific_metric_fields = [field.title() for field in self.specific_metric_fields]
+                    for field in self.specific_metric_fields:
                         if field in acc.metric_fields:
                             metric_cls_set.append(acc)
                         elif field in pre.metric_fields:
@@ -149,11 +168,10 @@ class MetricEvaluator:
                             metric_cls_set.append(cm)
                         else:
                             print(f"There is no '{field}' metric field in current Metric Classes. Skipping...")
-                            eval_cfg.specific_metric_fields.remove(field)
+                            self.specific_metric_fields.remove(field)
 
-        self.metric_cls_list = list(set(metric_cls_set)) + [COUNT(task=eval_cfg.evaluation_task)]
+        self.metric_cls_list = list(set(metric_cls_set)) + [COUNT(task=self.evaluation_task)]
 
         self.metric_names = [metric.get_name() for metric in self.metric_cls_list]
-        if "Confusion Matrix".title() in eval_cfg.specific_metric_fields:
-            eval_cfg.specific_metric_fields.remove("confusion matrix".title())
-        self.specific_metric_fields = eval_cfg.specific_metric_fields
+        if "Confusion Matrix".title() in self.specific_metric_fields:
+            self.specific_metric_fields.remove("confusion matrix".title())
