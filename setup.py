@@ -34,7 +34,6 @@ setuptools.setup(
     setup_requires=["wheel"],  # avoid building error when pip is not updated
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
-    include_package_data=True,  # include files in MANIFEST.in
     classifiers=[
         "Programming Language :: Python :: 3", "Operating System :: OS Independent",
         "License :: OSI Approved :: MIT License",
