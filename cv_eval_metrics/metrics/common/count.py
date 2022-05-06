@@ -1,7 +1,7 @@
 from typing import Dict, List, Union
 
 from cv_eval_metrics.config import TMetricConfig, CMetricConfig
-from cv_eval_metrics.abstract import BaseMetric
+from cv_eval_metrics.base import BaseMetric
 
 
 class COUNT(BaseMetric):

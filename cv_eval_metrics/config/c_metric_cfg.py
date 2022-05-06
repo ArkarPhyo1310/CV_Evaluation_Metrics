@@ -1,7 +1,6 @@
 import os
 from typing import Dict, List, Union
 
-import numpy as np
 from cv_eval_metrics.objects import ClassificationObject
 
 
@@ -58,7 +57,7 @@ class CMetricConfig:
         self,
         classes: Union[List[str], str],
         average: str = "micro", mdmc: str = "global",
-        multi_label: bool = False, normalize: str = "pred",
+        multi_label: bool = False, normalize: str = None,
         top_k: int = None
     ) -> None:
         self.__average = average
@@ -89,6 +88,9 @@ class CMetricConfig:
                 # self.__classes = {i: class_list[i] for i in range(len(class_list))}
         else:
             raise TypeError("Unsupported Type!")
+
+        if normalize is not None and normalize not in ["pred", "true", "all"]:
+            raise ValueError("Confusion Matrix Normalization value is invalid! Must be 'pred', 'true', 'all' or None")
 
         self.__num_classes = len(self.__classes)
 

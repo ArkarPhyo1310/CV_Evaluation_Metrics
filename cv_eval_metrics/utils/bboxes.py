@@ -3,7 +3,26 @@ from copy import deepcopy
 import numpy as np
 
 
-def box_iou(bboxes1: np.ndarray, bboxes2: np.ndarray, box_format: str = 'xywh', do_ioa: bool = False):
+def xywh_to_xyxy(bboxes: np.ndarray) -> np.ndarray:
+    bboxes[:, 2] = bboxes[:, 0] + bboxes[:, 2]
+    bboxes[:, 3] = bboxes[:, 1] + bboxes[:, 3]
+    return bboxes
+
+
+def cxcywh_to_xyxy(bboxes: np.ndarray) -> np.ndarray:
+    bboxes[:, 0] = bboxes[:, 0] - 0.5 * bboxes[:, 2]
+    bboxes[:, 1] = bboxes[:, 1] - 0.5 * bboxes[:, 3]
+    bboxes[:, 2] = bboxes[:, 0] + 0.5 * bboxes[:, 2]
+    bboxes[:, 3] = bboxes[:, 1] + 0.5 * bboxes[:, 3]
+
+    return bboxes
+
+
+def box_area(bboxes: np.ndarray) -> np.ndarray:
+    return (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
+
+
+def box_iou(bboxes1: np.ndarray, bboxes2: np.ndarray, box_format: str = 'xyxy', do_ioa: bool = False):
     """ Calculates the IOU (intersection over union) between two arrays of boxes.
         Allows variable box formats ('xywh' and 'xyxy').
         If do_ioa (intersection over area) , then calculates the intersection over the area of boxes1 - this is commonly
@@ -12,11 +31,11 @@ def box_iou(bboxes1: np.ndarray, bboxes2: np.ndarray, box_format: str = 'xywh', 
     bboxes1 = deepcopy(bboxes1)
     bboxes2 = deepcopy(bboxes2)
     if box_format == 'xywh':
-        # layout: (x0, y0, w, h)
-        bboxes1[:, 2] = bboxes1[:, 0] + bboxes1[:, 2]
-        bboxes1[:, 3] = bboxes1[:, 1] + bboxes1[:, 3]
-        bboxes2[:, 2] = bboxes2[:, 0] + bboxes2[:, 2]
-        bboxes2[:, 3] = bboxes2[:, 1] + bboxes2[:, 3]
+        bboxes1 = xywh_to_xyxy(bboxes1)
+        bboxes2 = xywh_to_xyxy(bboxes2)
+    elif box_format == 'cxcywh':
+        bboxes1 = cxcywh_to_xyxy(bboxes1)
+        bboxes2 = cxcywh_to_xyxy(bboxes2)
     elif box_format == 'xyxy':
         bboxes1 = bboxes1
         bboxes2 = bboxes2

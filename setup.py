@@ -1,5 +1,6 @@
 import re
 import setuptools
+from setuptools import find_packages
 
 
 def get_install_requirements():
@@ -10,7 +11,7 @@ def get_install_requirements():
 
 
 def get_version():
-    with open("cv_evaluation_metrics/__init__.py", "r") as f:
+    with open("cv_eval_metrics/__init__.py", "r") as f:
         version = re.search(
             r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
             f.read(), re.MULTILINE
@@ -29,6 +30,7 @@ setuptools.setup(
     version=get_version(),
     author="Arkar Phyo",
     url="https://github.com/ArkarPhyo1310/CV_Evaluation_Metrics",
+    packages=find_packages("src", exclude=["data", "tools"]),
     python_requires=">=3.6",
     install_requires=get_install_requirements(),
     setup_requires=["wheel"],  # avoid building error when pip is not updated

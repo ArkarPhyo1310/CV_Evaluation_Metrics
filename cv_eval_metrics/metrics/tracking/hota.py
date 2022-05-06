@@ -2,7 +2,7 @@ from typing import Dict, List
 
 import numpy as np
 from cv_eval_metrics.config import TMetricConfig
-from cv_eval_metrics.abstract import BaseMetric
+from cv_eval_metrics.base import BaseMetric
 from scipy.optimize import linear_sum_assignment
 
 

@@ -4,7 +4,7 @@
 Run example:
 python run_tracking.py
 """
-from cv_eval_metrics.abstract import MetricEvaluator
+from cv_eval_metrics.base import MetricEvaluator
 from cv_eval_metrics.config import TMetricConfig
 from cv_eval_metrics.dataset import MOT
 

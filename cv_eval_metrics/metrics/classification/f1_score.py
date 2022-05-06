@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Union
 
 import numpy as np
-from cv_eval_metrics.abstract import BaseMetric
+from cv_eval_metrics.base import BaseMetric
 from cv_eval_metrics.config import CMetricConfig
 from cv_eval_metrics.utils.classification_utils import (
     calculate_base, choose_topk, input_format_classification, to_onehot)

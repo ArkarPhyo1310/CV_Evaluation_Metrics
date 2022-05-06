@@ -6,7 +6,7 @@ This project is inspired due to the lack of various evaluation metrics of comput
 
 ## <div align="center"> Features </div>
 
-<details>
+<details open>
 <summary> Classification  </summary>
 
 - Accuracy :ballot_box_with_check:
@@ -30,7 +30,7 @@ This project is inspired due to the lack of various evaluation metrics of comput
 - Coming Soon...
   
 </details>
-<details>
+<details open>
 <summary> Tracking </summary>
 
 - CLEAR metrics :ballot_box_with_check:
@@ -76,7 +76,7 @@ python setup.py develop
 1. Create Classfication Object for prediction and target. (Classification Object)
 2. Create Classification Metric Config.
 3. Update the Metric Config with Classification Object.
-4. Create Evaluator Config.
+4. Create Evaluator.
 5. Then evaluate the result.
 
 ```python
@@ -128,7 +128,7 @@ python tools/run_tracking.py
 
 >NOTE: More evaluation metrics for different task such as detection, segmentation, etc. will be updated soon. I have also provided data required to test for tracking in the ***data*** folder. Original data can be found [here](https://github.com/JonathonLuiten/TrackEval#quickly-evaluate-on-supported-benchmarks).
 
-## <div align="center">Credits </div>
+## <div align="center"> References </div>
 
 - [TrackEval](https://github.com/JonathonLuiten/TrackEval)
 - [TorchMetrics](https://torchmetrics.rtfd.io/en/latest)

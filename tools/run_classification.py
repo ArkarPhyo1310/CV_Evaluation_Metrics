@@ -5,7 +5,7 @@ python run_classification.py
 
 """
 import numpy as np
-from cv_eval_metrics.abstract.evaluator import MetricEvaluator
+from cv_eval_metrics.base.evaluator import MetricEvaluator
 from cv_eval_metrics.config import CMetricConfig
 from cv_eval_metrics.objects import ClassificationObject
 

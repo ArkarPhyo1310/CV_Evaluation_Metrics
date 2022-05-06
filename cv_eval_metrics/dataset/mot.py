@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 from cv_eval_metrics.config import TMetricConfig
-from cv_eval_metrics.abstract import BaseDataset
+from cv_eval_metrics.base import BaseDataset
 from cv_eval_metrics.objects.tracking_info import TrackingObject
 
 

@@ -2,7 +2,7 @@ from typing import Dict, List
 
 import numpy as np
 
-from cv_eval_metrics.abstract import BaseMetric
+from cv_eval_metrics.base import BaseMetric
 from cv_eval_metrics.config import CMetricConfig
 from cv_eval_metrics.utils.classification_utils import input_format_classification, prob_to_cls
 
@@ -17,8 +17,6 @@ class ConfusionMatrix(BaseMetric):
         self._metric_fields = ["Confusion Matrix"]
 
     def compute(self, cfg: CMetricConfig) -> Dict:
-        if cfg.normalize not in ["pred", "true", "all"]:
-            raise ValueError("Confusion Matrix Normalization value is invalid! Must be 'pred', 'true' or 'all'")
         num_classes = cfg.num_classes
         multi_label = cfg.multi_label
         cm = np.zeros((num_classes, num_classes))
