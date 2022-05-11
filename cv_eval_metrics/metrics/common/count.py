@@ -24,9 +24,8 @@ class COUNT(BaseMetric):
                 'Pred_IDs': cfg.pred_ids_cnt,
                 'GT_IDs': cfg.gt_ids_cnt,
                 'Frames': cfg.timestamps_cnt,
-                'Pred_Cnts': cfg.pred_dets_cnt
             }
-        elif self.task == "classification":
+        else:
             metric_dict = {
                 'Pred_Cnts': len(cfg.pred_labels),
                 'GT_Cnts': len(cfg.gt_labels)

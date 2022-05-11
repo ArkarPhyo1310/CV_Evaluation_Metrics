@@ -2,9 +2,6 @@ import csv
 import os
 from abc import ABC, abstractmethod
 from glob import glob
-from typing import Union
-
-from cv_eval_metrics.config import CMetricConfig, TMetricConfig
 
 
 class BaseDataset(ABC):
@@ -15,11 +12,7 @@ class BaseDataset(ABC):
         self._valid_labels = [1]
 
     @abstractmethod
-    def process(self, gt_file: str, pred_file: str):
-        ...
-
-    @abstractmethod
-    def assign(self, metric_cfg: Union[TMetricConfig, CMetricConfig]):
+    def process(self, gt_file: str = None, pred_file: str = None):
         ...
 
     def _check_path(self):

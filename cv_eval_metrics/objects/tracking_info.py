@@ -1,10 +1,9 @@
-from abc import ABC
 from typing import List
 
 import numpy as np
 
 
-class TrackingObject(ABC):
+class TrackingObject:
     @property
     def dets(self) -> List[np.ndarray]:
         return self.__dets

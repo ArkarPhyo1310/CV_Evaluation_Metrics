@@ -34,9 +34,9 @@ class HOTA(BaseMetric):
             return metric_dict
 
         # Variables counting global association
-        potential_matches_count = np.zeros((cfg.gt_ids_cnt, cfg.pred_ids_cnt))
-        gt_id_count = np.zeros((cfg.gt_ids_cnt, 1))
-        pred_id_count = np.zeros((1, cfg.pred_ids_cnt))
+        potential_matches_count = np.zeros((cfg.pred_ids_cnt, cfg.gt_ids_cnt))
+        gt_id_count = np.zeros((1, cfg.gt_ids_cnt))
+        pred_id_count = np.zeros((cfg.pred_ids_cnt, 1))
 
         # First loop through each timestep and accumulate global track information.
         for timestamp, (gt_ids_t, pred_ids_t) in enumerate(zip(cfg.gt_ids, cfg.pred_ids)):
@@ -47,11 +47,11 @@ class HOTA(BaseMetric):
             sim_iou = np.zeros_like(similarity)
             sim_iou_mask = sim_iou_denom > 0 + np.finfo('float').eps
             sim_iou[sim_iou_mask] = similarity[sim_iou_mask] / sim_iou_denom[sim_iou_mask]
-            potential_matches_count[gt_ids_t[:, np.newaxis], pred_ids_t[np.newaxis, :]] += sim_iou
+            potential_matches_count[pred_ids_t[:, np.newaxis], gt_ids_t[np.newaxis, :]] += sim_iou
 
             # Calculate the total number of dets for each gt_id and pred_ids_t_id.
-            gt_id_count[gt_ids_t] += 1
-            pred_id_count[0, pred_ids_t] += 1
+            gt_id_count[0, gt_ids_t] += 1
+            pred_id_count[pred_ids_t] += 1
 
         # Calculate overall jaccard alignment score (before unique matching) between IDs
         global_alignment_score = potential_matches_count / (gt_id_count + pred_id_count - potential_matches_count)
@@ -71,7 +71,7 @@ class HOTA(BaseMetric):
 
             # Get matching scores between pairs of dets for optimizing HOTA
             similarity = cfg.similarity_scores[timestamp]
-            score_mat = global_alignment_score[gt_ids_t[:, np.newaxis], pred_ids_t[np.newaxis, :]] * similarity
+            score_mat = global_alignment_score[pred_ids_t[:, np.newaxis], gt_ids_t[np.newaxis, :]] * similarity
 
             # Hungarian algorithm to find best matches
             match_rows, match_cols = linear_sum_assignment(-score_mat)
@@ -87,7 +87,7 @@ class HOTA(BaseMetric):
                 metric_dict['HOTA_FP'][a] += len(pred_ids_t) - num_matches
                 if num_matches > 0:
                     metric_dict['LocA'][a] += sum(similarity[alpha_match_rows, alpha_match_cols])
-                    matches_counts[a][gt_ids_t[alpha_match_rows], pred_ids_t[alpha_match_cols]] += 1
+                    matches_counts[a][pred_ids_t[alpha_match_rows], gt_ids_t[alpha_match_cols]] += 1
 
         # Calculate association scores (AssA, AssRe, AssPr) for the alpha value.
         # First calculate scores per gt_id/pred_ids_t_id combo and then average over the number of detections.
@@ -118,7 +118,7 @@ class HOTA(BaseMetric):
         metric_dict = self._compute_final_fields(metric_dict)
         return metric_dict
 
-    @staticmethod
+    @ staticmethod
     def _compute_final_fields(metric_dict: Dict) -> Dict:
         """Calculate sub-metric ('field') values which only depend on other sub-metric values.
         This function is used both for both per-sequence calculation, and in combining values across sequences.

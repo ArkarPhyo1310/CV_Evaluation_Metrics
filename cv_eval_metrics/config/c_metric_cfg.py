@@ -85,7 +85,6 @@ class CMetricConfig:
 
             with open(classes, 'r') as f:
                 self.__classes = f.read().splitlines()
-                # self.__classes = {i: class_list[i] for i in range(len(class_list))}
         else:
             raise TypeError("Unsupported Type!")
 

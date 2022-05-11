@@ -4,10 +4,12 @@ import numpy as np
 import pandas as pd
 from cv_eval_metrics.config import TMetricConfig
 from cv_eval_metrics.config.c_metric_cfg import CMetricConfig
+from cv_eval_metrics.config.d_metric_cfg import DMetricConfig
 from cv_eval_metrics.metrics.classification import (Accuracy,
                                                     ConfusionMatrix,
                                                     F1Score, Precision,
                                                     Recall)
+from cv_eval_metrics.metrics.detection import COCOMetrics
 from cv_eval_metrics.metrics.common import COUNT
 from cv_eval_metrics.metrics.tracking import CLEAR, HOTA, IDENTITY
 from tabulate import tabulate
@@ -35,17 +37,19 @@ class MetricEvaluator:
                 "MOTA", "IDF1", "HOTA", "MT", "ML", "FP", "FN", "Recall", "Precision",
                 "AssA", "DetA", "AssRe", "AssPr", "DetRe", "DetPr", "LocA", "IDSW", "FRAG"
             ],
-            'kitti': ["HOTA", "DetA", "AssA", "DetRe", "DetPr", "AssRe", "AssPr", "LocA", "MOTA"]
+            'kitti': ["HOTA", "DetA", "AssA", "DetRe", "DetPr", "AssRe", "AssPr", "LocA", "MOTA"],
+            'coco': COCOMetrics().metric_fields
         }
 
         self._check_config()
 
-    def evaluate(self, metric_cfg: Union[TMetricConfig, CMetricConfig], curr_seq: str = None):
+    def evaluate(self, metric_cfg: Union[TMetricConfig, CMetricConfig, DMetricConfig], curr_seq: str = None):
         self.classes = metric_cfg.classes
         if curr_seq is None:
             curr_seq = 'N/A'
 
         self.evaluation_result[curr_seq] = {}
+        print(f"Calculating Metric...{self.metric_names} for {curr_seq}")
 
         for metric, metric_name in zip(self.metric_cls_list, self.metric_names):
             self.evaluation_result[curr_seq][metric_name] = metric.compute(metric_cfg)
@@ -103,7 +107,10 @@ class MetricEvaluator:
                            seq_value in self.evaluation_result.items() if seq_key != 'COMBINED_SEQ'}
             self.evaluation_result['COMBINED_SEQ'][metric_name] = metric.combine_result(current_res)
 
-        num_preds = self.evaluation_result['COMBINED_SEQ']['COUNT']['Pred_Cnts']
+        if 'Pred_Cnts' in self.evaluation_result['COMBINED_SEQ']['COUNT']:
+            num_preds = self.evaluation_result['COMBINED_SEQ']['COUNT']['Pred_Cnts']
+        else:
+            num_preds = self.evaluation_result['COMBINED_SEQ']['COUNT']['Pred_Dets']
         if num_preds > 0:
             for metric, metric_name in zip(self.metric_cls_list, self.metric_names):
                 table_res = {seq_key: seq_value[metric_name] for seq_key, seq_value
@@ -131,7 +138,7 @@ class MetricEvaluator:
             metric_cls_set = set(self.metrics_cls_to_eval)
         else:
             if self.evaluation_task == "tracking":
-                print("Checking Specific Metric Fields List...")
+                print("Checking Specific Metric Fields List for Object Tracking...")
                 clear_metric = CLEAR()
                 hota_metric = HOTA()
                 id_metric = IDENTITY()
@@ -147,7 +154,7 @@ class MetricEvaluator:
                             print(f"There is no '{field}' metric field in current Metric Classes. Skipping...")
                             self.specific_metric_fields.remove(field)
             elif self.evaluation_task == "classification":
-                print("Checking Specific Metric Fields List...")
+                print("Checking Specific Metric Fields List for Image Classification...")
                 acc = Accuracy()
                 pre = Precision()
                 rcl = Recall()
@@ -169,6 +176,13 @@ class MetricEvaluator:
                         else:
                             print(f"There is no '{field}' metric field in current Metric Classes. Skipping...")
                             self.specific_metric_fields.remove(field)
+            elif self.evaluation_task == "detection":
+                print("Checking Specific Metric Fields List for Object Detection...")
+                coco = COCOMetrics()
+                if self.specific_metric_fields:
+                    for field in self.specific_metric_fields:
+                        if field in coco.metric_fields:
+                            metric_cls_set.append(coco)
 
         self.metric_cls_list = list(set(metric_cls_set)) + [COUNT(task=self.evaluation_task)]
 

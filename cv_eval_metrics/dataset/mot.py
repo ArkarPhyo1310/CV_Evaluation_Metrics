@@ -3,7 +3,7 @@ from typing import List
 
 import numpy as np
 import pandas as pd
-from cv_eval_metrics.config import TMetricConfig
+
 from cv_eval_metrics.base import BaseDataset
 from cv_eval_metrics.objects.tracking_info import TrackingObject
 
@@ -32,11 +32,10 @@ class MOT(BaseDataset):
         self.__seq_list = [os.path.splitext(os.path.basename(gt_file))[0] for gt_file in self.__gt_files]
 
     def process(self, gt_file: str, pred_file: str):
-        self.__gt_data: TrackingObject = self.read_mot_file(gt_file, is_gt=True)
-        self.__pred_data: TrackingObject = self.read_mot_file(pred_file, is_gt=False)
+        gt_data: TrackingObject = self.read_mot_file(gt_file, is_gt=True)
+        pred_data: TrackingObject = self.read_mot_file(pred_file, is_gt=False)
 
-    def assign(self, metric_cfg: TMetricConfig):
-        metric_cfg.update(self.__gt_data, self.__pred_data)
+        return gt_data, pred_data
 
     def read_mot_file(self, file: str,  is_gt: bool):
         results_dict = dict(

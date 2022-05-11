@@ -34,15 +34,15 @@ class IDENTITY(BaseMetric):
         threshold = cfg.threshold
 
         # Variables counting global association
-        potential_matches_count = np.zeros((cfg.gt_ids_cnt, cfg.pred_ids_cnt))
+        potential_matches_count = np.zeros((cfg.pred_ids_cnt, cfg.gt_ids_cnt))
         gt_id_count = np.zeros(cfg.gt_ids_cnt)
         pred_id_count = np.zeros(cfg.pred_ids_cnt)
 
         for timestamp, (gt_ids_t, pred_ids_t) in enumerate(zip(cfg.gt_ids, cfg.pred_ids)):
             # Count the potential matches between ids in each timestamp
             matches_mask = np.greater_equal(cfg.similarity_scores[timestamp], threshold)
-            match_idx_gt, match_idx_pred = np.nonzero(matches_mask)
-            potential_matches_count[gt_ids_t[match_idx_gt], pred_ids_t[match_idx_pred]] += 1
+            match_idx_pred, match_idx_gt = np.nonzero(matches_mask)
+            potential_matches_count[pred_ids_t[match_idx_pred], gt_ids_t[match_idx_gt]] += 1
 
             # Calculate the total number of dets for each git_id and pred_id
             gt_id_count[gt_ids_t] += 1
@@ -54,19 +54,19 @@ class IDENTITY(BaseMetric):
         fp_matrix = np.zeros((num_gt_ids + num_pred_ids, num_gt_ids + num_pred_ids))
         fn_matrix = np.zeros((num_gt_ids + num_pred_ids, num_gt_ids + num_pred_ids))
 
-        fp_matrix[num_gt_ids:, :num_pred_ids] = 1e10
-        fn_matrix[:num_gt_ids, num_pred_ids:] = 1e10
+        fp_matrix[:num_pred_ids, num_gt_ids:] = 1e10
+        fn_matrix[num_pred_ids:, :num_gt_ids] = 1e10
 
         for gt_id in range(num_gt_ids):
-            fn_matrix[gt_id, :num_pred_ids] = gt_id_count[gt_id]
-            fn_matrix[gt_id, num_pred_ids + gt_id] = gt_id_count[gt_id]
+            fn_matrix[:num_pred_ids, gt_id] = gt_id_count[gt_id]
+            fn_matrix[num_pred_ids + gt_id, gt_id] = gt_id_count[gt_id]
 
         for pred_id in range(num_pred_ids):
-            fp_matrix[:num_gt_ids, pred_id] = pred_id_count[pred_id]
-            fp_matrix[pred_id + num_gt_ids, pred_id] = pred_id_count[pred_id]
+            fp_matrix[pred_id, :num_gt_ids] = pred_id_count[pred_id]
+            fp_matrix[pred_id, pred_id + num_gt_ids] = pred_id_count[pred_id]
 
-        fn_matrix[:num_gt_ids, :num_pred_ids] -= potential_matches_count
-        fp_matrix[:num_gt_ids, :num_pred_ids] -= potential_matches_count
+        fn_matrix[:num_pred_ids, :num_gt_ids] -= potential_matches_count
+        fp_matrix[:num_pred_ids, :num_gt_ids] -= potential_matches_count
 
         # Hungarian Algorithm
         matched_rows, matched_cols = linear_sum_assignment(fn_matrix + fp_matrix)

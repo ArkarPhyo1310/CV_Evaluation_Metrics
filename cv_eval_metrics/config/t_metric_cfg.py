@@ -54,7 +54,7 @@ class TMetricConfig:
     def similarity_scores(self) -> List:
         return self.__similarity_scores
 
-    def __init__(self, classes: list = None, threshold: float = 0.5) -> None:
+    def __init__(self, classes: list = None, threshold: float = 0.5, box_format: str = 'xywh') -> None:
         self.__pred_ids: List = []
         self.__pred_dets: List = []
         self.__pred_ids_cnt: int = 0
@@ -67,6 +67,8 @@ class TMetricConfig:
 
         self.__threshold = threshold
         self.__classes = classes
+
+        self.__box_format = box_format
 
         self.__similarity_scores: List = []
 
@@ -84,5 +86,5 @@ class TMetricConfig:
         self.__pred_ids_cnt = pred.num_ids
 
         for timestamp, (gt_dets_t, pred_dets_t) in enumerate(zip(self.__gt_dets, self.__pred_dets)):
-            ious = box_iou(gt_dets_t, pred_dets_t)
+            ious = box_iou(pred_dets_t, gt_dets_t, self.__box_format)
             self.__similarity_scores.append(ious)

@@ -67,7 +67,7 @@ class CLEAR(BaseMetric):
 
             # Calculate score matrix to first minimise IDSWs from previous frame, then maximise MOTP secondarily
             similarity = cfg.similarity_scores[timestamp]
-            score_matrix = (pred_ids_t[np.newaxis, :] == prev_timestamp_pred_id[gt_ids_t[:, np.newaxis]])
+            score_matrix = (prev_timestamp_pred_id[gt_ids_t[np.newaxis, :]] == pred_ids_t[:, np.newaxis])
             score_matrix = 1000 * score_matrix + similarity
             score_matrix[similarity < threshold - np.finfo('float').eps] = 0
 
@@ -77,8 +77,8 @@ class CLEAR(BaseMetric):
             match_rows = match_rows[actually_matched_mask]
             match_cols = match_cols[actually_matched_mask]
 
-            matched_gt_ids = gt_ids_t[match_rows]
-            matched_pred_ids = pred_ids_t[match_cols]
+            matched_gt_ids = gt_ids_t[match_cols]
+            matched_pred_ids = pred_ids_t[match_rows]
 
             # Calculate IDSW for MOTA
             prev_matched_pred_ids = prev_pred_id[matched_gt_ids]
