@@ -17,10 +17,10 @@ This project is inspired due to the lack of various evaluation metrics of comput
   
 </details>
 
-<details>
+<details open>
 <summary> Detection </summary>
 
-- Coming Soon...
+- Mean Average Precision/Mean Average Recal :ballot_box_with_check:
   
 </details>
 
@@ -124,6 +124,7 @@ You can check the running scripts in [here](tools).
 ```bash
 python tools/run_classification.py
 python tools/run_tracking.py
+python tools/run_detection.py
 ```
 
 >NOTE: More evaluation metrics for different task such as detection, segmentation, etc. will be updated soon. I have also provided data required to test for tracking in the ***data*** folder. Original data can be found [here](https://github.com/JonathonLuiten/TrackEval#quickly-evaluate-on-supported-benchmarks).
@@ -132,3 +133,4 @@ python tools/run_tracking.py
 
 - [TrackEval](https://github.com/JonathonLuiten/TrackEval)
 - [TorchMetrics](https://torchmetrics.rtfd.io/en/latest)
+- [Pycocotools](https://github.com/cocodataset/cocoapi/tree/master/PythonAPI)
