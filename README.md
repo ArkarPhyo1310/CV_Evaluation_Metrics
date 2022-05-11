@@ -20,7 +20,7 @@ This project is inspired due to the lack of various evaluation metrics of comput
 <details open>
 <summary> Detection </summary>
 
-- Mean Average Precision/Mean Average Recal :ballot_box_with_check:
+- Mean Average Precision/Mean Average Recall :ballot_box_with_check:
   
 </details>
 
