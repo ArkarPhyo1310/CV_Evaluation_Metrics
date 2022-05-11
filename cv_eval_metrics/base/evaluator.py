@@ -1,3 +1,4 @@
+import sys
 from typing import List, Optional, Union
 
 import numpy as np
@@ -5,14 +6,15 @@ import pandas as pd
 from cv_eval_metrics.config import TMetricConfig
 from cv_eval_metrics.config.c_metric_cfg import CMetricConfig
 from cv_eval_metrics.config.d_metric_cfg import DMetricConfig
-from cv_eval_metrics.metrics.classification import (Accuracy,
-                                                    ConfusionMatrix,
-                                                    F1Score, Precision,
-                                                    Recall)
-from cv_eval_metrics.metrics.detection import COCOMetrics
+from cv_eval_metrics.metrics.classification import (Accuracy, ConfusionMatrix,
+                                                    F1Score, Precision, Recall)
 from cv_eval_metrics.metrics.common import COUNT
+from cv_eval_metrics.metrics.detection import COCOMetrics
 from cv_eval_metrics.metrics.tracking import CLEAR, HOTA, IDENTITY
 from tabulate import tabulate
+
+from loguru import logger
+logger.add('debug.log', mode='w', level='INFO')
 
 
 class MetricEvaluator:
@@ -49,7 +51,7 @@ class MetricEvaluator:
             curr_seq = 'N/A'
 
         self.evaluation_result[curr_seq] = {}
-        print(f"Calculating Metric...{self.metric_names} for {curr_seq}")
+        logger.info(f"Calculating Metric...{self.metric_names[:-1]} for {curr_seq}")
 
         for metric, metric_name in zip(self.metric_cls_list, self.metric_names):
             self.evaluation_result[curr_seq][metric_name] = metric.compute(metric_cfg)
@@ -63,15 +65,15 @@ class MetricEvaluator:
                 if metric_name == "ConfusionMatrix":
                     self.show_cm(self.table_result[metric_name])
                 else:
-                    print(tabulate(self.table_result[metric_name]['data'],
-                                   headers=self.table_result[metric_name]['header'],
-                                   tablefmt="pretty"), end="\n")
+                    logger.info('\n' + tabulate(self.table_result[metric_name]['data'],
+                                                headers=self.table_result[metric_name]['header'],
+                                                tablefmt="pretty"), end="\n")
 
     def show_cm(self, result: dict):
         headers = ["Confusion Matrix"] + self.classes
         data = eval(result['data'].squeeze()[-1])
 
-        print(tabulate(data, headers=headers, showindex=self.classes, tablefmt='pretty'))
+        logger.info('\n' + tabulate(data, headers=headers, showindex=self.classes, tablefmt='pretty'))
 
     def show_specific_fields(self, model_name: str = None):
         data_array = self.table_result['COUNT']['data'][:, 1:]
@@ -95,7 +97,7 @@ class MetricEvaluator:
             self.specific_metric_fields = ["MODEL NAME: " + model_name] + self.specific_metric_fields
         else:
             self.specific_metric_fields = [self.benchmark + f": {model_name}"] + self.specific_metric_fields
-        print(tabulate(df, headers=self.specific_metric_fields, tablefmt="pretty"))
+        logger.info('\n' + tabulate(df, headers=self.specific_metric_fields, tablefmt="pretty"))
 
     def _summarize_result(self, model_name: str, show_overall: bool = True):
         self.evaluation_result['COMBINED_SEQ'] = {}
@@ -124,21 +126,22 @@ class MetricEvaluator:
 
     def _check_config(self):
         metric_cls_set: list = list()
-        print("Checking Benchmark..Adding Metric Class if required...")
+        logger.info("Checking Benchmark..Adding Metric Class if required...")
         if self.benchmark is not None:
             try:
                 self.specific_metric_fields = self.benchmark_dict[self.benchmark]
+                logger.info(f"Performing benchmark on '{self.benchmark.upper()}'")
             except Exception:
                 raise ValueError(f"'{self.benchmark}' does not implemented yet!")
         else:
-            print("No benchmark is provided!")
+            logger.info("No benchmark is provided!")
 
-        print("Checking Metric Classes...")
+        logger.info("Checking Metric Classes...")
         if self.metrics_cls_to_eval:
             metric_cls_set = set(self.metrics_cls_to_eval)
         else:
             if self.evaluation_task == "tracking":
-                print("Checking Specific Metric Fields List for Object Tracking...")
+                logger.info("Checking Specific Metric Fields List for Object Tracking...")
                 clear_metric = CLEAR()
                 hota_metric = HOTA()
                 id_metric = IDENTITY()
@@ -151,10 +154,10 @@ class MetricEvaluator:
                         elif field in id_metric.metric_fields:
                             metric_cls_set.append(id_metric)
                         else:
-                            print(f"There is no '{field}' metric field in current Metric Classes. Skipping...")
+                            logger.info(f"There is no '{field}' metric field in current Metric Classes. Skipping...")
                             self.specific_metric_fields.remove(field)
             elif self.evaluation_task == "classification":
-                print("Checking Specific Metric Fields List for Image Classification...")
+                logger.info("Checking Specific Metric Fields List for Image Classification...")
                 acc = Accuracy()
                 pre = Precision()
                 rcl = Recall()
@@ -174,10 +177,10 @@ class MetricEvaluator:
                         elif field in cm.metric_fields:
                             metric_cls_set.append(cm)
                         else:
-                            print(f"There is no '{field}' metric field in current Metric Classes. Skipping...")
+                            logger.info(f"There is no '{field}' metric field in current Metric Classes. Skipping...")
                             self.specific_metric_fields.remove(field)
             elif self.evaluation_task == "detection":
-                print("Checking Specific Metric Fields List for Object Detection...")
+                logger.info("Checking Specific Metric Fields List for Object Detection...")
                 coco = COCOMetrics()
                 if self.specific_metric_fields:
                     for field in self.specific_metric_fields:
