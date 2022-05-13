@@ -1,7 +1,5 @@
 # <div align="center">CV Evaluation Metrics [All in One] </div>
 
-**This project is still in WIP.**
-
 This project is inspired due to the lack of various evaluation metrics of computer vision in one place.
 
 ## <div align="center"> Features </div>
